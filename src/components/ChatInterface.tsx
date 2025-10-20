@@ -42,46 +42,46 @@ export function ChatInterface() {
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
-
+  
     const userMessage: Message = {
       id: Date.now().toString(),
       content: input.trim(),
       role: "user",
       timestamp: new Date(),
     };
-
+  
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
-    setHasInteracted(true); // Mark interaction
-
+    setHasInteracted(true);
+  
     try {
-      const response = await axios.post("/chat", {
+      const API_URL = import.meta.env.DEV 
+        ? "https://botiee-backend.onrender.com"  // Local = Render too!
+        : import.meta.env.VITE_API_URL;
+        
+      const response = await axios.post(`${API_URL}/chat`, {
         message: input.trim(),
       }, {
-        timeout: 10000,
+        timeout: 30000, // Render is slower
       });
-
+  
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: response.data.response || "No response from backend.",
         role: "assistant",
         timestamp: new Date(),
       };
-
+  
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Chat error:", error);
-      const errorMessage =
-        error.response?.status === 500
-          ? "Sorry, the backend encountered an issue. Please try again later."
-          : "Failed to connect to the backend. Ensure it’s running at port 8000.";
+      const errorMessage = "Botiee is thinking...";
       toast({
-        title: "Error",
+        title: "Connecting",
         description: errorMessage,
-        variant: "destructive",
       });
-
+  
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         content: errorMessage,
